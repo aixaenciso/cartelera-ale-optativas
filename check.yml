@@ -1,0 +1,41 @@
+name: Chequear nuevas ofertas ALE/Optativas
+
+on:
+  schedule:
+    # Cada 5 minutos (el mínimo real que soporta GitHub Actions gratis).
+    # Nota: GitHub puede demorar el disparo unos minutos en horarios de mucha carga.
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}  # permite ejecutarlo manualmente desde la pestaña Actions
+
+permissions:
+  contents: write  # necesario para que el workflow pueda commitear el estado actualizado
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install requests beautifulsoup4
+
+      - name: Ejecutar chequeo
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: python check_ofertas.py
+
+      - name: Guardar estado actualizado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add seen_ofertas.json
+          git diff --staged --quiet || git commit -m "Actualizar ofertas vistas [skip ci]"
+          git push
