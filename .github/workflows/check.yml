@@ -2,7 +2,7 @@ name: Chequear nuevas ofertas ALE/Optativas
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/7 * * * *"
   workflow_dispatch: {}
 
 permissions:
